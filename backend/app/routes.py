@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.routes.recipes import recipes_router
+from app.handlers.recipes.routes import recipes_router
 
 
 class HeadRouter:

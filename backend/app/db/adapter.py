@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 
 
 class BaseAdapter(ABC):
-    """Абстрактный класс реализует принцип инверсии зависимости(DIP)"""
 
     @abstractmethod
     async def add(self, **kwargs):

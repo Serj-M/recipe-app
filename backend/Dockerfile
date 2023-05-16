@@ -1,29 +1,26 @@
-# Установка базового образа
-FROM python:3.11
+# Installing base image
+FROM python:3.10
 
-# устанавливаем зависимости
+# Installing dependencies
 RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Установка рабочей директории внутри контейнера
+# Setting the working directory inside the container
 WORKDIR /app
 
-# Копирование зависимостей в контейнер
+# Copying project dependencies
 COPY requirements.txt .
 
-# Установка зависимостей
+# Installing project dependencies
+RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Копирование исходных файлов в контейнер
+# Copying project files into the container
 COPY . .
 
-# Определение переменной окружения для запуска приложения FastAPI
-ENV PORT 8000
+# Setting environment variables for FastAPI
+ENV PYTHONPATH=/app
 
-# Открытие порта для внешнего доступа
-EXPOSE $PORT
-
-# Запуск команды для запуска приложения FastAPI
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
-
+# Defining the command to start the FastAPI server
+CMD ["uvicorn", "main:app", "--host", "127.0.0.1", "--port", "8000"]

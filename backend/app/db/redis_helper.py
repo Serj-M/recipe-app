@@ -13,11 +13,9 @@ class ClientCache:
 
     def cache(self, ex: int = 500):
         """
-        Декоратор кеширования результатов
-
-        :param ex время жизни данных в кэше (сек)
+        Decorator
+        :param ex cache lifetime (in seconds)
         """
-
         def function(func):
             @wraps(func)
             async def wrapper(*args, **kwargs):
@@ -34,9 +32,8 @@ class ClientCache:
     @staticmethod
     def __get_client(params) -> [Redis, None]:
         """
-        Получение клиента Redis
-
-        :param params: параметры подключения
+        get client Redis
+        :param params connection
         """
 
         try:
@@ -49,11 +46,10 @@ class ClientCache:
 
     async def get_cache(self, key: str = None, request: Request = None) -> [dict, None]:
         """
-        Получение данных из кэша
-
-        :param key: ключ, по которому осуществляется поиск данных (не обязательное)
-        :param request: запрос, на основе которого формируется ключ поиска (не обязательное)
-        :return: кешированные данные, при наличии
+        Get data from cache
+        :param key: the key used to find the data (optional)
+        :param request: request from which the search key is generated (optional)
+        :return: cached data, if available
         """
 
         if not self.client:
@@ -62,21 +58,19 @@ class ClientCache:
         try:
             d = await self.client.get(name=key_)
             if d:
-                logger.debug(f'\n\tИз Redis получен кэш по ключу: {key_}')
+                logger.debug(f'\n\tfrom Redis by key: {key_}')
                 return loads(d)
         except Exception as err:
             logger.error(f'err get data cache: {err}')
 
     async def set_cache(self, key: str = None, request: Request = None, data: dict | list = None, ex=500):
         """
-        Запись данных в кэш
-
-        :param key ключ, по которому осуществляется запись данных (не обязательное)
-        :param request запрос, на основе которого формируется ключ записи (не обязательное)
-        :param data записываемые данные
-        :param ex время жизни данных в кэше (сек)
-
-        :info - должен быть передан key или request
+        Write data to cache
+        :param key which is used to write the data (optional)
+        :param request for the key used to write the data (optional)
+        :param data to be written
+        :param ex cache lifetime (in seconds)
+        :info - either the key or the request must be passed
         """
 
         if not self.client:
@@ -84,12 +78,12 @@ class ClientCache:
         try:
             key_ = key if key else await self.key_generate(request)
             await self.client.set(name=key_, value=dumps(data), ex=ex)
-            logger.debug(f'\n\tВ Redis добавлен кэш с ключом: {key_} \n\tВремя жизни {ex}')
+            logger.debug(f'\n\tAdd cache in Redis with key: {key_} \n\tLifetime {ex}')
         except Exception as err:
             logger.error(f'err set cache: {err}')
 
     async def key_generate(self, request: Request) -> str:
-        """ Формирование ключа по данным запроса """
+        """ Generating a key from query data """
         if not request:
             return ""
         body = await request.json() if await request.body() else ""
@@ -99,7 +93,7 @@ class ClientCache:
 
     @staticmethod
     def _body_to_key(body: dict) -> str:
-        """ Преобразование тела запроса в ключ """
+        """ Converting the body of the request into a key """
         if not isinstance(body, dict):
             return ""
         key_value = str()
@@ -108,5 +102,4 @@ class ClientCache:
         return key_value
 
     async def close_client(self):
-        """"""
         await self.client.close()
