@@ -16,3 +16,8 @@ UpdateConflict = HTTPException(
 DeleteConflict = HTTPException(
     status_code=status.HTTP_409_CONFLICT,
     detail='Conflict when deleting')
+
+NotFoundId = HTTPException(
+    status_code=status.HTTP_404_NOT_FOUND,
+    detail='There is no record in the database with this ID'
+)
