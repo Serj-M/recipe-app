@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Setting the working directory inside the container
+RUN mkdir /app
 WORKDIR /app
 
 # Copying project dependencies
@@ -14,14 +15,10 @@ COPY requirements.txt .
 
 # Installing project dependencies
 RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
 # Copying project files into the container
 COPY . .
 
-# Setting environment variables for FastAPI
-ENV PYTHONPATH=/app
-
 # Defining the command to start the FastAPI server
 CMD uvicorn app.main:app --host 0.0.0.0 --port 8000
-# CMD ["bash", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]

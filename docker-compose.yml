@@ -3,71 +3,32 @@ version: '3'
 services:
   database:
     image: postgres:14.3
-    restart: always
-    environment:
-    - POSTGRES_DB=recipes
-    - POSTGRES_USER=postgres
-    - POSTGRES_PASSWORD=postgres
-    # - DB_HOST=database
-    # - PGDATA=/var/lib/postgresql/data/pgdata
-    # - DB_NAME=recipes
-    # - DB_USER=postgres
-    # - DB_PASSWORD=postgres
-    # - DB_HOST=127.0.0.1
-    # - DB_PORT=5432
-    ports:
-    - "5432:5432"
-    volumes:
-    #   - .db/pgdata:/var/lib/postgresql/data/pgdata
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
-    command: postgres -c 'shared_preload_libraries=pg_stat_statements'
-    # command: >
-    #  postgres
-    #    -c logging_collector=on
-    #    -c log_destination=stderr
-    #    -c max_connections=200
-    #    -c shared_buffers=1GB
-    #    -c effective_cache_size=4GB
-    #    -c work_mem=16MB
-    #    -c maintenance_work_mem=512MB
-    #    -c random_page_cost=1.1
-    #    -c temp_file_limit=10GB
-    #    -c log_min_duration_statement=200ms
-    #    -c idle_in_transaction_session_timeout=10s
-    #    -c lock_timeout=1s
-    #    -c statement_timeout=60s
-    #    -c shared_preload_libraries=pg_stat_statements
-    #    -c pg_stat_statements.max=10000
-    #    -c pg_stat_statements.track=all
-    # healthcheck:
-    #   test: ["CMD", "pg_isready", "-U", "postgres"]
-    #   interval: 5s
-    #   retries: 5
+    container_name: database_recipes
+    command: -p 1221
+    expose:
+      - 1221
+    env_file:
+      - ./backend/.env-prod
 
   cache:
     image: redis:latest
-    volumes:
-      - ./cache:/data
-    ports:
-      - 6379:6379
+    container_name: cache_recipes
+    command: --port 5370
+    expose:
+      - 5370
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    env_file:
+      - ./backend/.env-prod
+    container_name: backend_recipes
     ports:
-      - 8000:8000
+      - 8765:8000
     depends_on:
       - database
       - cache
-
-  migration:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    depends_on:
-      - database
-    entrypoint: alembic upgrade head
 
   # frontend:
   #   build:

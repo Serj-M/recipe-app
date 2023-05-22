@@ -6,9 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 
 from app.config import DATABASE_URL
 from app.handlers.recipes.models import Recipes_Base
-from app.helpers.config_generator import EnvInstaller
-
-EnvInstaller()
 
 config = context.config
 

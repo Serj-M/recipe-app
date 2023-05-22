@@ -6,3 +6,13 @@ For data storage I used PostgreSQL (via ORM SQLAlchemy and Alembic migration).
 For caching I configured Redis. 
 Frontend is developed in Vue.js 3. 
 To run it all, I configured Docker-compose.
+
+Commands to run the application:
+  docker compose up -d --build
+  docker compose exec backend alembic upgrade head
+  docker compose ps
+
+URLs:
+  Frontend: 
+  Backend: http://localhost:8765
+  Swagger: http://localhost:8765/docs

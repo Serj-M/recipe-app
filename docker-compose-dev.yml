@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  database:
+    image: postgres:14.3
+    container_name: database_recipes
+    command: -p 1221
+    expose:
+      - 1221
+    env_file:
+      - ./backend/.env
+
+  cache:
+    image: redis:latest
+    container_name: cache_recipes
+    command: --port 5370
+    expose:
+      - 5370
