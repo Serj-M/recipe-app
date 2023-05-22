@@ -13,7 +13,7 @@ EnvInstaller()
 config = context.config
 
 section = config.config_ini_section
-config.set_section_option(section, 'DATABSE_URL', DATABASE_URL)
+config.set_section_option(section, 'DATABASE_URL', DATABASE_URL)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
