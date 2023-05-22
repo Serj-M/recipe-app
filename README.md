@@ -13,6 +13,6 @@ Commands to run the application:
   docker compose ps
 
 URLs:
-  Frontend: 
-  Backend: http://localhost:8765
-  Swagger: http://localhost:8765/docs
+  Frontend: http://localhost:8087/
+  Backend:  http://localhost:8765
+  Swagger:  http://localhost:8765/docs 

@@ -1,4 +1,7 @@
 version: '3'
+# To start in production mode, use the commands:
+  # docker compose up -d --build
+  # docker compose exec backend alembic upgrade head
 
 services:
   database:
@@ -30,11 +33,12 @@ services:
       - database
       - cache
 
-  # frontend:
-  #   build:
-  #     context: ./frontend
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8080:8080"
-  #   depends_on:
-  #     - backend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend_recipes
+    ports:
+      - "8087:80"
+    depends_on:
+      - backend

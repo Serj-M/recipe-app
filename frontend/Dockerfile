@@ -1,32 +1,33 @@
-# Установка базового образа Node.js
-FROM node:14 AS build-stage
+# Node.js base image installation
+FROM node:18.16 AS build-stage
 
-# Установка рабочей директории внутри контейнера
+# Set up a working directory inside the container
 WORKDIR /app
 
-# Копирование зависимостей в контейнер
+# Copying the dependencies into the container
 COPY vue-project/package*.json ./
 
-# Установка зависимостей
+# Dependency installation
 RUN npm install
 
-# Копирование исходных файлов в контейнер
+# Copying source files into a container
 COPY . .
 
-# Сборка статических файлов
-RUN npm run dev
+WORKDIR /app/vue-project
+# Build static files
+RUN npm run build
 
-# Второй этап для контейнера хостинга
+# second step for hosting container
 FROM nginx:stable-alpine as production-stage
 
-# Копирование собранных статических файлов в контейнер хостинга
-COPY --from=build-stage /app/dist /usr/share/nginx/html
+# Copying the assembled static files into the hosting container
+COPY --from=build-stage /app/vue-project/dist /usr/share/nginx/html
 
-# Копирование конфигурации Nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy Nginx configuration
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Открытие порта для внешнего доступа
-EXPOSE 8080
+# Open port for external access
+EXPOSE 80
 
-# Команда для запуска Nginx сервера
+# Command to start the Nginx server
 CMD ["nginx", "-g", "daemon off;"]

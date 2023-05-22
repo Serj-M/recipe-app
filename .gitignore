@@ -50,6 +50,7 @@ last-commit.svg
 *.so
 
 # Distribution / packaging
+db
 .Python
 build/
 develop-eggs/
