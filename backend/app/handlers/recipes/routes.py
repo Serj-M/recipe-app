@@ -1,4 +1,6 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
+from sqlalchemy import select
+from sqlalchemy.engine import row
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from starlette.responses import JSONResponse
@@ -9,6 +11,7 @@ import app.config as config
 from app.handlers.recipes.exceptions import NotFoundId
 from app.handlers.recipes.handler import Recipe
 from app.handlers.recipes.headers import recipes_header
+from app.handlers.recipes.models import TagsModel
 from app.handlers.recipes.schemas import RecipeSchema, AddRecipeSchema, EditRecipeSchema
 
 recipes_router = APIRouter()
@@ -16,7 +19,7 @@ redis = ClientCache(config.REDIS_PARAMS)
 
 
 @recipes_router.get('/header')
-@redis.cache(ex=config.REDIS_CACHE_EX.default)
+# @redis.cache(ex=config.REDIS_CACHE_EX.default)
 async def get_header() -> dict:
     """
     Router to get a description of the recipe table columns
@@ -27,11 +30,11 @@ async def get_header() -> dict:
 
 
 @recipes_router.post('/items')
-@redis.cache(ex=config.REDIS_CACHE_EX.default)
+# @redis.cache(ex=config.REDIS_CACHE_EX.default)
 async def get_recipes(
-        q: Request,
-        params: RecipeSchema,
-        session: AsyncSession = Depends(get_session)
+    q: Request,
+    params: RecipeSchema,
+    session: AsyncSession = Depends(get_session)
 ) -> dict:
     """
     Router to retrieve a list of recipes.
@@ -43,10 +46,11 @@ async def get_recipes(
 
 
 @recipes_router.post('/add', status_code=201)
-@redis.cache(ex=config.REDIS_CACHE_EX.default)
+# @redis.cache(ex=config.REDIS_CACHE_EX.default)
 async def add_recipe(
-        params: AddRecipeSchema,
-        session: AsyncSession = Depends(get_session)
+    q: Request,
+    params: AddRecipeSchema,
+    session: AsyncSession = Depends(get_session)
 ) -> int:
     """
     Router for adding a recipe.
@@ -58,10 +62,11 @@ async def add_recipe(
 
 
 @recipes_router.delete('/del/{recipe_id}')
-@redis.cache(ex=config.REDIS_CACHE_EX.default)
+# @redis.cache(ex=config.REDIS_CACHE_EX.default)
 async def del_recipe(
-        recipe_id: int,
-        session: AsyncSession = Depends(get_session)
+    q: Request,
+    recipe_id: int,
+    session: AsyncSession = Depends(get_session)
 ) -> JSONResponse:
     """
     Router for deleting a recipe.
@@ -86,11 +91,12 @@ async def del_recipe(
 
 
 @recipes_router.put('/edit/{recipe_id}')
-@redis.cache(ex=config.REDIS_CACHE_EX.default)
+# @redis.cache(ex=config.REDIS_CACHE_EX.default)
 async def edit_recipe(
-        recipe_id: int,
-        params: EditRecipeSchema,
-        session: AsyncSession = Depends(get_session)
+    q: Request,
+    recipe_id: int,
+    params: EditRecipeSchema,
+    session: AsyncSession = Depends(get_session)
 ) -> int:
     """
     Router for editing a recipe.
@@ -99,3 +105,19 @@ async def edit_recipe(
     recipe: Recipe = Recipe(session)
     _id: int = await recipe.edit_recipe(recipe_id=recipe_id, params=params)
     return 0
+
+
+@recipes_router.get('/tags')
+# @redis.cache(ex=config.REDIS_CACHE_EX.default)
+async def get_tags(
+    q: Request,
+    session: AsyncSession = Depends(get_session)
+) -> dict:
+    """
+    Router to get a data from table tags
+    :return: tag table data
+    """
+    query: select = select(TagsModel.__table__)
+    data: row = (await session.execute(query)).fetchall()
+    tags: list = [{'id': item[0], 'name': item[1]} for item in data]
+    return {'tags': tags}

@@ -1,13 +1,20 @@
 <template>
-  <v-data-table-server v-model:items-per-page="itemsPerPage" :search="search" :headers="headers"
-    :items-length="totalItems" :items="serverItems" :loading="loading" class="elevation-1" item-value="title"
+  <v-data-table-server 
+    v-model:items-per-page="itemsPerPage" 
+    :search="search"
+    :headers="headers"
+    :items-length="totalItems" 
+    :items="serverItems" 
+    :loading="loading"
+    class="elevation-1" 
+    item-value="title"
     @update:options="loadItems">
     <template v-slot:top>
       <v-toolbar flat>
         <v-toolbar-title>Recipe book</v-toolbar-title>
         <v-divider class="mx-4" inset vertical></v-divider>
         <v-spacer></v-spacer>
-        <v-dialog v-model="dialogAction" max-width="500px">
+        <v-dialog v-model="dialogAction" max-width="1000px">
           <template v-slot:activator="{ props }">
             <v-btn color="primary" dark class="mb-2" v-bind="props">
               New recipe
@@ -42,7 +49,7 @@
 
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="blue-darken-1" variant="text" @click="closeAction">
+              <v-btn color="blue-darken-1" variant="text" @click="close">
                 Cancel
               </v-btn>
               <v-btn color="blue-darken-1" variant="text" @click="save">
@@ -51,7 +58,7 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
-        <v-dialog v-model="dialogDelete" max-width="500px">
+        <v-dialog v-model="dialogDelete" max-width="1000px">
           <v-card>
             <v-card-title class="text-h5">Are you sure you want to delete this recipes?</v-card-title>
             <v-card-actions>
@@ -75,7 +82,7 @@
     <template v-slot:no-data>
       <p>No data</p>
     </template>
-    <template v-slot:thead>
+    <template v-slot:thead v-if="headers.length">
       <tr>
         <td></td>
         <td>
@@ -93,75 +100,17 @@
 </template>
 
 <script>
-const recipes = [
-  {
-    title: 'Pancakes',
-    ingredients: 'Flour, Eggs, Milk, Salt, Sugar, Oil',
-    instructions: `Mix flour, eggs, milk, salt, and sugar in a bowl until smooth. 
-                  Heat and grease a skillet. Pour the batter onto the skillet and cook until golden brown on both sides. 
-                  Repeat with the remaining batter. Serve the pancakes with your favorite fillings or toppings.`,
-    time: 1,
-    tags: 'Breakfast, Dessert',
-  },
-]
-
-const FakeAPI = {
-  async fetch({ page, itemsPerPage, sortBy, search }) {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        const start = (page - 1) * itemsPerPage
-        const end = start + itemsPerPage
-        const items = recipes.slice().filter(item => {
-          if (search.tags.length && !item.tags.toLowerCase().includes(search.tags[0].toLowerCase())) {
-            return false
-          }
-
-          // eslint-disable-next-line sonarjs/prefer-single-boolean-return
-          if (search.ingredients && !(item.ingredients >= Number(search.ingredients))) {
-            return false
-          }
-
-          return true
-        })
-
-        if (sortBy.length) {
-          const sortKey = sortBy[0].key
-          const sortOrder = sortBy[0].order
-          items.sort((a, b) => {
-            const aValue = a[sortKey]
-            const bValue = b[sortKey]
-            return sortOrder === 'desc' ? bValue - aValue : aValue - bValue
-          })
-        }
-
-        const paginated = items.slice(start, end)
-
-        resolve({ items: paginated, total: items.length })
-      }, 500)
-    })
-  },
-}
+import api from '../api'
 
 export default {
   data: () => ({
+    paramsLoadItems: {},
     dialogAction: false,
     dialogDelete: false,
-    itemsPerPage: 5,
-    headers: [
-      {
-        title: 'Title',
-        align: 'start',
-        sortable: false,
-        key: 'title',
-      },
-      { title: 'Ingredients', key: 'ingredients', align: 'end', sortable: false  },
-      { title: 'Instructions for preparation', key: 'instructions', align: 'end', sortable: false },
-      { title: 'Cook time', key: 'time', align: 'end' },
-      { title: 'Tags', key: 'tags', align: 'end', sortable: false },
-      { title: 'Actions', key: 'actions', sortable: false },
-    ],
+    itemsPerPage: 10,
+    headers: [],
     serverItems: [],
-    loading: true,
+    loading: false,
     totalItems: 0,
     tags: [],
     ingredients: '',
@@ -169,24 +118,31 @@ export default {
     editedIndex: -1,
     editedItem: {
       title: '',
-      ingredients: 0,
-      instructions: 0,
-      time: 0,
-      tags: 0,
+      ingredients: '',
+      instructions: '',
+      time: '',
+      tags: '',
     },
     defaultItem: {
       title: '',
-      ingredients: 0,
-      instructions: 0,
-      time: 0,
-      tags: 0,
+      ingredients: '',
+      instructions: '',
+      time: '',
+      tags: '',
     },
   }),
+
+  async created() {
+    await this.loadHeaders()
+    await this.loadItems({})
+  },
+
   computed: {
     formTitle() {
       return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
     },
   },
+
   watch: {
     title() {
       this.search = String(Date.now())
@@ -195,27 +151,71 @@ export default {
       this.search = String(Date.now())
     },
     dialogAction(val) {
-      val || this.closeAction()
+      val || this.close()
     },
     dialogDelete(val) {
       val || this.closeDelete()
     },
   },
+
   methods: {
-    loadItems({ page, itemsPerPage, sortBy }) {
-      this.loading = true
-      FakeAPI.fetch({ page, itemsPerPage, sortBy, search: { tags: this.tags, ingredients: this.ingredients } })
-        .then(({ items, total }) => {
-          this.serverItems = items
-          this.totalItems = total
-          this.loading = false
-        })
+    async loadHeaders() {
+      try {
+        const res = await api.get('/recipes/v1/header')
+        this.headers = res.data.headers
+      } 
+      catch(error) {
+        console.error(error)
+      }
     },
 
-    editItem(item) {
+    async loadItems({ page=1, itemsPerPage=10, sortBy=[] }) {
+      this.loading = true
+      try {
+        this.paramsLoadItems = { 
+          page, 
+          itemsPerPage, 
+          sortBy, 
+          search: { tags: this.tags, ingredients: this.ingredients }
+        }
+        const res = await api.post('/recipes/v1/items', this.paramsLoadItems)
+        res.data.items.forEach(el => el.tags = el.tags.join(', '))
+        this.serverItems = res.data.items
+        this.totalItems = res.data.totalItems
+        this.loading = false
+      } 
+      catch(error) {
+        this.loading = false
+        console.error(error)
+      }
+    },
+
+    async editItem(item) {
       this.editedIndex = this.serverItems.indexOf(item)
       this.editedItem = Object.assign({}, item)
       this.dialogAction = true
+      this.loading = true
+      try {
+        const id = item.id
+        delete item.id
+        const params = await this.prepParams(item)
+        await api.put(`/recipes/v1/edit/${id}`, params)
+        await this.loadItems(this.paramsLoadItems)
+        this.loading = false
+      } 
+      catch(error) {
+        this.loading = false
+        console.error(error)
+      }
+    },
+
+    async prepParams(params) {
+      const res = await api.get('/recipes/v1/tags')
+      const tagsJSON = res.data.tags
+      const tagsParams = Array.isArray(params.tags) ? params.tags : params.tags.split(', ')
+      const tagIds = tagsParams.map(el => tagsJSON.find(t => t.name == el)?.id)
+      params.tags = tagIds
+      return params
     },
 
     deleteItem(item) {
@@ -225,11 +225,11 @@ export default {
     },
 
     deleteItemConfirm() {
-      this.recipes.splice(this.editedIndex, 1)
+      this.serverItems.splice(this.editedIndex, 1)
       this.closeDelete()
     },
 
-    closeAction() {
+    close() {
       this.dialogAction = false
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem)
@@ -247,11 +247,11 @@ export default {
 
     save() {
       if (this.editedIndex > -1) {
-        Object.assign(this.recipes[this.editedIndex], this.editedItem)
+        Object.assign(this.serverItems[this.editedIndex], this.editedItem)
       } else {
-        this.recipes.push(this.editedItem)
+        this.serverItems.push(this.editedItem)
       }
-      this.closeAction()
+      this.close()
     },
   },
 }

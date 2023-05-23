@@ -12,7 +12,9 @@ app = FastAPI(
     version=config.VERSION_APP,
     contact={
         "name": "Sergey Makshakov",
-        "email": "sejey44@gmail.com"},)
+        "email": "sejey44@gmail.com"
+    },
+)
 
 app.add_middleware(
     CORSMiddleware,

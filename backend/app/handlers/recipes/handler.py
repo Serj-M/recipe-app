@@ -84,6 +84,7 @@ class Recipe:
             recipe = item.RecipesModel
             tags = item.tags
             d = {
+                'id': recipe.id,
                 'title': recipe.title,
                 'ingredients': recipe.ingredients,
                 'instructions': recipe.instructions,
