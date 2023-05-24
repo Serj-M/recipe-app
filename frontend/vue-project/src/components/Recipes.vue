@@ -108,7 +108,7 @@
       <tr>
         <td></td>
         <td>
-          <v-text-field v-model="ingredients" class="mb-6" hide-details placeholder="Search by ingredient" ></v-text-field>
+          <v-text-field v-model="ingredients" class="mb-6" hide-details placeholder="Search by ingredient" clearable></v-text-field>
         </td>
         <td></td>
         <td></td>
@@ -120,6 +120,7 @@
             label="Search by tags" 
             :items="tagsNames"
             multiple
+            clearable
           />
         </td>
       </tr>
