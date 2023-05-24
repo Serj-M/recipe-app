@@ -1,4 +1,7 @@
 <template>
+  <v-alert v-if="isDeleted" type="info" variant="outlined" dismissible>
+    Recipe successfully deleted
+  </v-alert>
   <v-data-table-server 
     v-model:items-per-page="itemsPerPage" 
     :search="search"
@@ -11,7 +14,7 @@
     @update:options="loadItems">
     <template v-slot:top>
       <v-toolbar flat>
-        <v-toolbar-title>Recipe book</v-toolbar-title>
+        <v-toolbar-title>Recipe list</v-toolbar-title>
         <v-divider class="mx-4" inset vertical></v-divider>
         <v-spacer></v-spacer>
         <v-dialog v-model="dialogAction" max-width="1000px">
@@ -137,11 +140,12 @@ export default {
       value => value !== '' || 'This field is required',
     ],
     isRequiredTags: [
-      value => value.length || 'This field is required',
+      value => value.length > 0 || 'This field is required',
     ],
     paramsLoadItems: {},
     dialogAction: false,
     dialogDelete: false,
+    isDeleted: false,
     itemsPerPage: 10,
     headers: [],
     serverItems: [],
@@ -185,7 +189,7 @@ export default {
   },
 
   watch: {
-    title() {
+    tags() {
       this.search = String(Date.now())
     },
     ingredients() {
@@ -213,11 +217,12 @@ export default {
     async loadItems({ page=1, itemsPerPage=10, sortBy=[] }) {
       this.loading = true
       try {
+        const tagsIds = this.getTagsIds(this.tags)
         this.paramsLoadItems = { 
           page, 
           itemsPerPage, 
           sortBy, 
-          search: { tags: this.tags, ingredients: this.ingredients }
+          search: { tags: tagsIds, ingredients: this.ingredients }
         }
         const res = await api.post('/recipes/v1/items', this.paramsLoadItems)
         res.data.items.forEach(el => el.tags = el.tags.join(', '))
@@ -239,64 +244,79 @@ export default {
     },
 
     deleteItem(item) {
-      // this.editedIndex = this.serverItems.indexOf(item)
-      // this.editedItem = Object.assign({}, item)
+      this.editedItem = Object.assign({}, item)
       this.dialogDelete = true
     },
 
-    deleteItemConfirm() {
-      // this.serverItems.splice(this.editedIndex, 1)
-      this.closeDelete()
+    async deleteItemConfirm() {
+      try {
+        const res = await api.delete(`/recipes/v1/del/${this.editedItem.id}`)
+        // update recipes to reflect changes
+        await this.loadItems(this.paramsLoadItems)
+        this.closeDelete()
+        this.deleteAlert()
+      } catch (error) {
+        console.error(error)
+      }
     },
 
     close() {
+      this.loading = false
       this.dialogAction = false
-      // this.$nextTick(() => {
-      //   this.editedItem = Object.assign({}, this.defaultItem)
-      //   this.editedIndex = -1
-      // })
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem)
+        this.editedIndex = -1
+      })
     },
 
     closeDelete() {
+      this.loading = false
       this.dialogDelete = false
-      // this.$nextTick(() => {
-      //   this.editedItem = Object.assign({}, this.defaultItem)
-      //   this.editedIndex = -1
-      // })
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem)
+        this.editedIndex = -1
+      })
+    },
+
+    deleteAlert() {
+      this.isDeleted = true
+      setTimeout(() => {
+        this.isDeleted = false
+      }, 2000)
     },
 
     async save() {
-      // Edit
-      if (this.editedIndex > -1) {
-        this.loading = true
-        try {
-          const id = this.editedItem.id
-          delete this.editedItem.id
-          const params = this.prepParams(this.editedItem)
+      this.loading = true
+      const id = this.editedItem.id
+      delete this.editedItem.id
+      try {
+        const params = this.prepParams(this.editedItem)
+        // Edit recipe
+        if (this.editedIndex > -1) {
           await api.put(`/recipes/v1/edit/${id}`, params)
-          await this.loadItems(this.paramsLoadItems)
-          this.loading = false
-          this.dialogAction = false
         } 
-        catch(error) {
-          this.loading = false
-          this.dialogAction = false
-          console.error(error)
+        // Add recipe
+        else {
+          await api.post(`/recipes/v1/add`, params)
         }
-      } 
-      // Add
-      else {
-        // this.serverItems.push(this.editedItem)
+      } catch (error) {
+        console.error(error)
       }
+      // update recipes to reflect changes
+      await this.loadItems(this.paramsLoadItems)
       this.close()
     },
 
     prepParams(params) {
-      const tagsParams = Array.isArray(params.tags) ? params.tags : params.tags.split(', ')
-      const tagIds = tagsParams.map(el => this.tagsJSON.find(t => t.name == el)?.id)
-      params.tags = tagIds
+      params.tags = this.getTagsIds(params.tags)
       return params
     },
+
+    getTagsIds(tags) {
+      const _tags = Array.isArray(tags) ? tags : tags.split(', ')
+      const result = _tags.map(el => this.tagsJSON.find(t => t.name == el)?.id)
+      return result
+    }
   },
 }
 </script>
