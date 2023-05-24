@@ -50,6 +50,7 @@ last-commit.svg
 *.so
 
 # Distribution / packaging
+cache
 db
 .Python
 build/

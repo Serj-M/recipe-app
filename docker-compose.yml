@@ -16,9 +16,10 @@ services:
   cache:
     image: redis:latest
     container_name: cache_recipes
-    command: --port 5370
-    expose:
-      - 5370
+    ports:
+      - "5370:6379"
+    volumes:
+      - ./cache:/data
 
   backend:
     build:
@@ -28,7 +29,7 @@ services:
       - ./backend/.env-prod
     container_name: backend_recipes
     ports:
-      - 8765:8000
+      - "8765:8000"
     depends_on:
       - database
       - cache
