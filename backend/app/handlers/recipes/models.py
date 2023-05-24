@@ -1,22 +1,21 @@
 from sqlalchemy import (Column, Float, ForeignKey, Integer, Text, CheckConstraint, UniqueConstraint)
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import declarative_base, relationship
 
 Recipes_Base = declarative_base()
 
 
-class RecipesModel(Recipes_Base):
+class RecipesTags(Recipes_Base):
+    """
+    Association table for many-to-many
+    """
+    __tablename__ = 'recipes_tags'
 
-    __tablename__ = 'recipes'
-
-    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
-    title = Column(Text, nullable=False)
-    ingredients = Column(Text, nullable=False)
-    instructions = Column(Text, nullable=False)
-    time = Column(Integer, nullable=False)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    recipe_id = Column(Integer, ForeignKey('recipes.id'), nullable=False)
+    tag_id = Column(Integer, ForeignKey('tags.id'), nullable=False)
 
     __table_args__ = (
-        UniqueConstraint('title'),
-        CheckConstraint('time > 0', name='time_check')
+        UniqueConstraint('recipe_id', 'tag_id'),
     )
 
 
@@ -32,16 +31,23 @@ class TagsModel(Recipes_Base):
     )
 
 
-class RecipesTags(Recipes_Base):
-    """
-    Association table for many-to-many
-    """
-    __tablename__ = 'recipes_tags'
+class RecipesModel(Recipes_Base):
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    recipe_id = Column(Integer, ForeignKey('recipes.id'), nullable=False)
-    tag_id = Column(Integer, ForeignKey('tags.id'), nullable=False)
+    __tablename__ = 'recipes'
+
+    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
+    title = Column(Text, nullable=False)
+    ingredients = Column(Text, nullable=False)
+    instructions = Column(Text, nullable=False)
+    time = Column(Integer, nullable=False)
+
+    tags = relationship(
+        TagsModel,
+        secondary=RecipesTags.__table__,
+        lazy='select'
+    )
 
     __table_args__ = (
-        UniqueConstraint('recipe_id', 'tag_id'),
+        UniqueConstraint('title'),
+        CheckConstraint('time > 0', name='time_check')
     )

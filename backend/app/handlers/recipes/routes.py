@@ -19,7 +19,7 @@ redis = ClientCache(config.REDIS_PARAMS)
 
 
 @recipes_router.get('/header')
-# @redis.cache(ex=config.REDIS_CACHE_EX.default)
+@redis.cache(ex=config.REDIS_CACHE_EX.default)
 async def get_header() -> dict:
     """
     Router to get a description of the recipe table columns
@@ -30,7 +30,7 @@ async def get_header() -> dict:
 
 
 @recipes_router.post('/items')
-# @redis.cache(ex=config.REDIS_CACHE_EX.default)
+@redis.cache(ex=config.REDIS_CACHE_EX.default)
 async def get_recipes(
     q: Request,
     params: RecipeSchema,
@@ -46,7 +46,7 @@ async def get_recipes(
 
 
 @recipes_router.post('/add', status_code=201)
-# @redis.cache(ex=config.REDIS_CACHE_EX.default)
+@redis.cache(ex=config.REDIS_CACHE_EX.default)
 async def add_recipe(
     q: Request,
     params: AddRecipeSchema,
@@ -62,7 +62,7 @@ async def add_recipe(
 
 
 @recipes_router.delete('/del/{recipe_id}')
-# @redis.cache(ex=config.REDIS_CACHE_EX.default)
+@redis.cache(ex=config.REDIS_CACHE_EX.default)
 async def del_recipe(
     q: Request,
     recipe_id: int,
@@ -91,7 +91,7 @@ async def del_recipe(
 
 
 @recipes_router.put('/edit/{recipe_id}')
-# @redis.cache(ex=config.REDIS_CACHE_EX.default)
+@redis.cache(ex=config.REDIS_CACHE_EX.default)
 async def edit_recipe(
     q: Request,
     recipe_id: int,
@@ -108,7 +108,7 @@ async def edit_recipe(
 
 
 @recipes_router.get('/tags')
-# @redis.cache(ex=config.REDIS_CACHE_EX.default)
+@redis.cache(ex=config.REDIS_CACHE_EX.default)
 async def get_tags(
     q: Request,
     session: AsyncSession = Depends(get_session)
