@@ -38,7 +38,6 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  margin: 70px 20px 40px;
   font-size: 16px;
   line-height: 40px;
 }

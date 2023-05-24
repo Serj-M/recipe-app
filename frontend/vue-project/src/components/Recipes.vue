@@ -16,7 +16,7 @@
         <v-spacer></v-spacer>
         <v-dialog v-model="dialogAction" max-width="1000px">
           <template v-slot:activator="{ props }">
-            <v-btn color="primary" dark class="mb-2" v-bind="props">
+            <v-btn color="blue-darken-1" variant="outlined" class="mb-2" v-bind="props">
               New recipe
             </v-btn>
           </template>
@@ -26,22 +26,31 @@
             </v-card-title>
 
             <v-card-text>
+              <p>* required fields</p>
               <v-container>
                 <v-row>
-                  <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.title" label="title"></v-text-field>
+                  <v-col cols="12" sm="12" md="6">
+                    <v-text-field v-model="editedItem.title" label="title*" :rules="isRequired"></v-text-field>
                   </v-col>
-                  <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.ingredients" label="ingredients"></v-text-field>
+                  <v-col cols="12" sm="12" md="6">
+                    <v-text-field v-model="editedItem.ingredients" label="ingredients*" :rules="isRequired"></v-text-field>
                   </v-col>
-                  <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.instructions" label="instructions for preparation"></v-text-field>
+                  <v-col cols="12" sm="12" md="12">
+                    <v-textarea v-model="editedItem.instructions" label="instructions for preparation*" :rules="isRequired"></v-textarea>
                   </v-col>
-                  <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.time" label="Cook time"></v-text-field>
+                  <v-col cols="12" sm="12" md="6">
+                    <v-text-field v-model="editedItem.time" type="number" label="Cook time*" :rules="numberRules"></v-text-field>
                   </v-col>
-                  <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.tags" label="Tags"></v-text-field>
+                  <v-col cols="12" sm="12" md="6">
+                    <v-autocomplete 
+                      v-model="editedItem.tags" 
+                      class="mb-0" 
+                      chips 
+                      label="Tags*" 
+                      :items="tagsNames"
+                      multiple
+                      :rules="isRequiredTags"
+                    />
                   </v-col>
                 </v-row>
               </v-container>
@@ -52,7 +61,17 @@
               <v-btn color="blue-darken-1" variant="text" @click="close">
                 Cancel
               </v-btn>
-              <v-btn color="blue-darken-1" variant="text" @click="save">
+              <v-btn 
+                color="blue-darken-1" 
+                variant="text" 
+                @click="save" 
+                :disabled="
+                  !editedItem.title || 
+                  !editedItem.ingredients || 
+                  !editedItem.instructions || 
+                  !editedItem.time || parseInt(editedItem.time, 10) < 1 || !/^\d+$/.test(editedItem.time) ||
+                  !editedItem.tags.length"
+              >
                 Save
               </v-btn>
             </v-card-actions>
@@ -72,12 +91,12 @@
       </v-toolbar>
     </template>
     <template v-slot:item.actions="{ item }">
-      <a href="#" class="link-style" @click="editItem(item.raw)">
+      <v-btn color="blue-darken-1" variant="text" density="compact" size="small" @click="editItem(item.raw)">
         Edit
-      </a>
-      <a href="#" class="link-style" @click="deleteItem(item.raw)">
+      </v-btn>
+      <v-btn color="blue-darken-1" variant="text" density="compact" size="small" @click="deleteItem(item.raw)">
         Delete
-      </a>
+      </v-btn>
     </template>
     <template v-slot:no-data>
       <p>No data</p>
@@ -86,13 +105,19 @@
       <tr>
         <td></td>
         <td>
-          <v-text-field v-model="ingredients" hide-details placeholder="Search by ingredient" density="compact"></v-text-field>
+          <v-text-field v-model="ingredients" class="mb-6" hide-details placeholder="Search by ingredient" ></v-text-field>
         </td>
         <td></td>
         <td></td>
         <td>
-          <v-autocomplete v-model="tags" chips label="Search by tags" :items="['Breakfast', 'Lunch', 'Dinner', 'Dessert']"
-            multiple></v-autocomplete>
+          <v-autocomplete 
+            v-model="tags" 
+            class="mb-0" 
+            chips 
+            label="Search by tags" 
+            :items="tagsNames"
+            multiple
+          />
         </td>
       </tr>
     </template>
@@ -104,6 +129,16 @@ import api from '../api'
 
 export default {
   data: () => ({
+    numberRules: [
+      value => /^\d+$/.test(value) || 'Enter the correct cooking time (integer only)',
+      value => parseInt(value, 10) !== 0 || 'Cooking time cannot be zero',
+    ],
+    isRequired: [
+      value => value !== '' || 'This field is required',
+    ],
+    isRequiredTags: [
+      value => value.length || 'This field is required',
+    ],
     paramsLoadItems: {},
     dialogAction: false,
     dialogDelete: false,
@@ -117,11 +152,12 @@ export default {
     search: '',
     editedIndex: -1,
     editedItem: {
+      id: null,
       title: '',
       ingredients: '',
       instructions: '',
       time: '',
-      tags: '',
+      tags: [],
     },
     defaultItem: {
       title: '',
@@ -130,11 +166,16 @@ export default {
       time: '',
       tags: '',
     },
+    tagsJSON: [],
+    tagsNames: [],
   }),
 
   async created() {
     await this.loadHeaders()
     await this.loadItems({})
+    const res = await api.get('/recipes/v1/tags')
+    this.tagsJSON = res.data.tags
+    this.tagsNames = this.tagsJSON.map(el => el.name)
   },
 
   computed: {
@@ -190,68 +231,71 @@ export default {
       }
     },
 
-    async editItem(item) {
+    editItem(item) {
       this.editedIndex = this.serverItems.indexOf(item)
       this.editedItem = Object.assign({}, item)
+      this.editedItem.tags = this.editedItem.tags.split(', ')
       this.dialogAction = true
-      this.loading = true
-      try {
-        const id = item.id
-        delete item.id
-        const params = await this.prepParams(item)
-        await api.put(`/recipes/v1/edit/${id}`, params)
-        await this.loadItems(this.paramsLoadItems)
-        this.loading = false
-      } 
-      catch(error) {
-        this.loading = false
-        console.error(error)
-      }
-    },
-
-    async prepParams(params) {
-      const res = await api.get('/recipes/v1/tags')
-      const tagsJSON = res.data.tags
-      const tagsParams = Array.isArray(params.tags) ? params.tags : params.tags.split(', ')
-      const tagIds = tagsParams.map(el => tagsJSON.find(t => t.name == el)?.id)
-      params.tags = tagIds
-      return params
     },
 
     deleteItem(item) {
-      this.editedIndex = this.serverItems.indexOf(item)
-      this.editedItem = Object.assign({}, item)
+      // this.editedIndex = this.serverItems.indexOf(item)
+      // this.editedItem = Object.assign({}, item)
       this.dialogDelete = true
     },
 
     deleteItemConfirm() {
-      this.serverItems.splice(this.editedIndex, 1)
+      // this.serverItems.splice(this.editedIndex, 1)
       this.closeDelete()
     },
 
     close() {
       this.dialogAction = false
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem)
-        this.editedIndex = -1
-      })
+      // this.$nextTick(() => {
+      //   this.editedItem = Object.assign({}, this.defaultItem)
+      //   this.editedIndex = -1
+      // })
     },
 
     closeDelete() {
       this.dialogDelete = false
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem)
-        this.editedIndex = -1
-      })
+      // this.$nextTick(() => {
+      //   this.editedItem = Object.assign({}, this.defaultItem)
+      //   this.editedIndex = -1
+      // })
     },
 
-    save() {
+    async save() {
+      // Edit
       if (this.editedIndex > -1) {
-        Object.assign(this.serverItems[this.editedIndex], this.editedItem)
-      } else {
-        this.serverItems.push(this.editedItem)
+        this.loading = true
+        try {
+          const id = this.editedItem.id
+          delete this.editedItem.id
+          const params = this.prepParams(this.editedItem)
+          await api.put(`/recipes/v1/edit/${id}`, params)
+          await this.loadItems(this.paramsLoadItems)
+          this.loading = false
+          this.dialogAction = false
+        } 
+        catch(error) {
+          this.loading = false
+          this.dialogAction = false
+          console.error(error)
+        }
+      } 
+      // Add
+      else {
+        // this.serverItems.push(this.editedItem)
       }
       this.close()
+    },
+
+    prepParams(params) {
+      const tagsParams = Array.isArray(params.tags) ? params.tags : params.tags.split(', ')
+      const tagIds = tagsParams.map(el => this.tagsJSON.find(t => t.name == el)?.id)
+      params.tags = tagIds
+      return params
     },
   },
 }

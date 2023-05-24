@@ -24,8 +24,8 @@ def upgrade() -> None:
         sa.Column('title', sa.Text(), nullable=False),
         sa.Column('ingredients', sa.Text(), nullable=False),
         sa.Column('instructions', sa.Text(), nullable=False),
-        sa.Column('time', sa.Float(), nullable=False),
-        sa.CheckConstraint('time >= 0', name='time_check'),
+        sa.Column('time', sa.Integer(), nullable=False),
+        sa.CheckConstraint('time > 0', name='time_check'),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('title')
     )

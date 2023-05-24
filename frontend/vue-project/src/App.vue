@@ -8,13 +8,13 @@
           <p class="name_app"></p>
           <v-spacer></v-spacer>
           <router-link to='/' class="mr-2">
-            <v-btn text>
+            <v-btn text variant="tonal">
               <span>Recipes</span>
             </v-btn>
           </router-link>
     
           <router-link to="/about">
-            <v-btn text>
+            <v-btn text variant="tonal">
               <span>About me</span>
             </v-btn>
           </router-link>

@@ -12,7 +12,7 @@ class AddRecipeSchema(BaseModel):
     title: str
     ingredients: str
     instructions: str
-    time: float
+    time: int
     tags: list[int]
 
 

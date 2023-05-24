@@ -12,11 +12,11 @@ class RecipesModel(Recipes_Base):
     title = Column(Text, nullable=False)
     ingredients = Column(Text, nullable=False)
     instructions = Column(Text, nullable=False)
-    time = Column(Float, nullable=False)
+    time = Column(Integer, nullable=False)
 
     __table_args__ = (
         UniqueConstraint('title'),
-        CheckConstraint('time >= 0', name='time_check')
+        CheckConstraint('time > 0', name='time_check')
     )
 
 
