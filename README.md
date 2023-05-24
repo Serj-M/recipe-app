@@ -1,6 +1,6 @@
 # recipe-app
-An application to create a cookbook of recipes.  
 
+**An application to create a cookbook of recipes.**
 
 Backend in Python 3.10 (using FastAPI). I use Pydantic for query validation and Loguru for logging. 
 
@@ -12,8 +12,7 @@ Frontend is developed in Vue.js 3.
 
 To run it all, I configured Docker-compose.
 
-
-Commands to run the application:
+**Commands to run the application:**
 
   docker compose up -d --build
 
@@ -21,8 +20,7 @@ Commands to run the application:
 
   docker compose ps
 
-
-URLs:
+**URLs:**
 
   Frontend: http://localhost:8087/
 
