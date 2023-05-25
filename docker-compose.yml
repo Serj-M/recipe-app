@@ -39,8 +39,6 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: frontend_recipes
-    environment:
-      - VUE_APP_MODE=prod
     ports:
       - "8087:80"
     depends_on:

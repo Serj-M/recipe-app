@@ -23,11 +23,5 @@ FROM nginx:stable-alpine as production-stage
 # Copying the assembled static files into the hosting container
 COPY --from=build-stage /app/vue-project/dist /usr/share/nginx/html
 
-# Copy Nginx configuration
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Open port for external access
-EXPOSE 80
-
 # Command to start the Nginx server
 CMD ["nginx", "-g", "daemon off;"]
