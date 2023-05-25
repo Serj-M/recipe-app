@@ -34,6 +34,8 @@ const vuetify = createVuetify({
 
 const app = createApp(App)
 
+app.config.devtools = true
+
 app.use(createPinia())
 app.use(router)
 app.use(vuetify)
