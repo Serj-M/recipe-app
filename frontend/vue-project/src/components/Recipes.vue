@@ -14,7 +14,7 @@
     @update:options="loadItems">
     <template v-slot:top>
       <v-toolbar flat>
-        <v-toolbar-title>Recipe list</v-toolbar-title>
+        <v-toolbar-title class="title-table">titleTable</v-toolbar-title>
         <v-divider class="mx-4" inset vertical></v-divider>
         <v-spacer></v-spacer>
         <v-dialog v-model="dialogAction" max-width="1000px">
@@ -133,6 +133,7 @@ import api from '../api'
 
 export default {
   data: () => ({
+    titleTable: 'Recipes',
     numberRules: [
       value => /^\d+$/.test(value) || 'Enter the correct cooking time (integer only)',
       value => parseInt(value, 10) !== 0 || 'Cooking time cannot be zero',
