@@ -1,0 +1,220 @@
+{
+	"info": {
+		"_postman_id": "6f7bc30e-a36d-4c85-969b-971465b008e2",
+		"name": "Recipes",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "11786017"
+	},
+	"item": [
+		{
+			"name": "headers for table",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8765/recipes/v1/header",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8765",
+					"path": [
+						"recipes",
+						"v1",
+						"header"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "tags",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8765/recipes/v1/tags",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8765",
+					"path": [
+						"recipes",
+						"v1",
+						"tags"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get recipes",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"page\": 1, \r\n    \"itemsPerPage\": 10, \r\n    \"sortBy\": [], \r\n    \"search\": {}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8765/recipes/v1/items",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8765",
+					"path": [
+						"recipes",
+						"v1",
+						"items"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "with sort and search",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"page\": 1, \r\n    \"itemsPerPage\": 10, \r\n    \"sortBy\": [\r\n        {\r\n            \"key\": \"time\",\r\n            \"order\": \"asc\"\r\n        }\r\n    ], \r\n    \"search\": { \r\n        \"tags\": [1], \r\n        \"ingredients\": \"t\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8765/recipes/v1/items",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8765",
+							"path": [
+								"recipes",
+								"v1",
+								"items"
+							]
+						}
+					},
+					"_postman_previewlanguage": null,
+					"header": null,
+					"cookie": [],
+					"body": null
+				}
+			]
+		},
+		{
+			"name": "add recipe",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"title\": \"Title\",\r\n    \"ingredients\": \"Ingredients ...\",\r\n    \"instructions\": \"Instructions ...\",\r\n    \"time\": 2,\r\n    \"tags\": [2]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8765/recipes/v1/add",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8765",
+					"path": [
+						"recipes",
+						"v1",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "del recipe",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8765/recipes/v1/del/1",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8765",
+					"path": [
+						"recipes",
+						"v1",
+						"del",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "edit recipe",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"title\": \"Edited title\",\r\n    \"ingredients\": \"Edited ingredients\",\r\n    \"instructions\": \"Edited instructions\",\r\n    \"time\": 1,\r\n    \"tags\": [1]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8765/recipes/v1/edit/1",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8765",
+					"path": [
+						"recipes",
+						"v1",
+						"edit",
+						"1"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
