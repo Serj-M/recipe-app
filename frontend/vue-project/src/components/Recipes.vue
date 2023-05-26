@@ -170,7 +170,7 @@ export default {
       ingredients: '',
       instructions: '',
       time: '',
-      tags: '',
+      tags: [],
     },
     tagsJSON: [],
     tagsNames: [],
