@@ -58,7 +58,7 @@ class ClientCache:
         try:
             d = await self.client.get(name=key_)
             if d:
-                logger.debug(f'\n\tfrom Redis by key: {key_}')
+                logger.info(f'\n\tfrom Redis by key: {key_}')
                 return loads(d)
         except Exception as err:
             logger.error(f'err get data cache: {err}')
@@ -78,7 +78,7 @@ class ClientCache:
         try:
             key_ = key if key else await self.key_generate(request)
             await self.client.set(name=key_, value=dumps(data), ex=ex)
-            logger.debug(f'\n\tAdd cache in Redis with key: {key_} \n\tLifetime {ex}')
+            logger.info(f'\n\tAdd cache in Redis with key: {key_} \n\tLifetime {ex}')
         except Exception as err:
             logger.error(f'err set cache: {err}')
 
@@ -88,7 +88,7 @@ class ClientCache:
             return ""
         body = await request.json() if await request.body() else ""
         key = request.url.path + "/" + request.url.query + self._body_to_key(body)
-        logger.debug(f'\n\tRedis generate key {key}')
+        logger.info(f'\n\tRedis generated key {key}')
         return key
 
     @staticmethod
