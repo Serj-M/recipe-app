@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request, HTTPException
+from fastapi import APIRouter, Depends, Request, HTTPException, Path
 from sqlalchemy import select
 from sqlalchemy.engine import row
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -65,8 +65,8 @@ async def add_recipe(
 @redis.cache(ex=config.REDIS_CACHE_EX.default)
 async def del_recipe(
     q: Request,
-    recipe_id: int,
-    session: AsyncSession = Depends(get_session)
+    session: AsyncSession = Depends(get_session),
+    recipe_id: int = Path(example=1)
 ) -> JSONResponse:
     """
     Router for deleting a recipe.
@@ -94,8 +94,8 @@ async def del_recipe(
 @redis.cache(ex=config.REDIS_CACHE_EX.default)
 async def edit_recipe(
     q: Request,
-    recipe_id: int,
     params: EditRecipeSchema,
+    recipe_id: int = Path(example=1),
     session: AsyncSession = Depends(get_session)
 ) -> int:
     """
