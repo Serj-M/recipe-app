@@ -2,9 +2,9 @@
 
 **An application to create a cookbook of recipes.**
 
-Backend in Python 3.10 (using FastAPI). I use Pydantic for query validation and Loguru for logging. 
+Backend in Python 3.10 (using FastAPI). I use Pydantic for query validation, Loguru for logging and Pytest. 
 
-For data storage I used PostgreSQL (via ORM SQLAlchemy and Alembic migration). 
+For data storage I used PostgreSQL (via ORM SQLAlchemy with AsyncSession and Alembic migration). 
 
 For caching I configured Redis. 
 

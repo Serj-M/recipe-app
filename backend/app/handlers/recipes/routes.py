@@ -74,16 +74,19 @@ async def del_recipe(
     """
     try:
         recipe: Recipe = Recipe(session)
-        await recipe.del_recipe(recipe_id=recipe_id)
-        response = JSONResponse(
-            content="Successfully removed",
-            status_code=status.HTTP_200_OK
-        )
-        return response
+        response = await recipe.del_recipe(recipe_id=recipe_id)
+        if response.rowcount == 1:
+            return JSONResponse(
+                content="Successfully removed",
+                status_code=status.HTTP_200_OK
+            )
+        else:
+            return JSONResponse(
+                content="There is no record in the database with this ID",
+                status_code=status.HTTP_404_NOT_FOUND
+            )
     except Exception as e:
         print('ERROR: ', e)
-        if e.args[0] == 'No row was found when one was required':
-            raise NotFoundId
         raise HTTPException(
             status_code=500,
             detail=f'Server error while deleting record'

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import select, func, distinct, update, delete, desc, Column
+from sqlalchemy import select, func, distinct, update, delete, desc, Column, CursorResult
 from sqlalchemy.engine import row
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import or_
@@ -149,18 +149,18 @@ class Recipe:
             self.session.add(new_recipes_tags)
             await self.session.flush()
 
-    async def del_recipe(self, recipe_id: int) -> None:
+    async def del_recipe(self, recipe_id: int) -> CursorResult:
         """
         :param recipe_id: ID of the recipe to be removed
-        :return: None
+        :return: CursorResult
         """
         query: delete = delete(RecipesModel).where(RecipesModel.id == recipe_id)
         try:
             await self.delete_in_association_table(recipe_id=recipe_id)
             await self.session.flush()
-            await self.session.execute(query)
+            response: CursorResult = await self.session.execute(query)
             await self.session.commit()
-            return None
+            return response
         except IntegrityError as e:
             print(e)
             await self.session.rollback()
