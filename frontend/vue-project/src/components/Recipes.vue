@@ -2,6 +2,9 @@
   <v-alert v-if="isDeleted" type="info" variant="outlined" dismissible>
     Recipe successfully deleted
   </v-alert>
+  <v-alert v-if="errorAPI" type="error" variant="outlined" dismissible>
+    {{ errorAPI }}
+  </v-alert>
   <v-data-table-server 
     v-model:items-per-page="itemsPerPage" 
     :search="search"
@@ -133,6 +136,7 @@ import api from '../api'
 
 export default {
   data: () => ({
+    errorAPI: '',
     titleTable: 'Recipes',
     numberRules: [
       value => /^\d+$/.test(value) || 'Enter the correct cooking time (integer only)',
@@ -240,6 +244,14 @@ export default {
       catch(error) {
         this.loading = false
         console.error(error)
+        if (error?.response?.data.detail) {
+          this.errorAPI = error.response.data.detail
+        } else {
+          this.errorAPI = 'An error occurred while loading the item.'
+        }
+        setTimeout(() => {
+          this.errorAPI = ''
+        }, 2000)
       }
     },
 
@@ -259,11 +271,19 @@ export default {
       try {
         const res = await api.delete(`/recipes/v1/del/${this.editedItem.id}`)
         this.closeDelete()
-        // update recipes to reflect changes
-        await this.loadItems(this.paramsLoadItems, false)
         // this.deleteAlert()
       } catch (error) {
         console.error(error)
+        if (error?.response?.data.detail) {
+          this.errorAPI = error.response.data.detail
+        } else {
+          this.errorAPI = 'An error occurred while deleting the item.'
+        }
+        setTimeout(() => {
+          this.errorAPI = ''
+        }, 2000)
+        // update recipes to reflect changes
+        await this.loadItems(this.paramsLoadItems, false)
       }
     },
 
@@ -306,6 +326,14 @@ export default {
         }
       } catch (error) {
         console.error(error)
+        if (error?.response?.data.detail) {
+          this.errorAPI = error.response.data.detail
+        } else {
+          this.errorAPI = this.editedIndex > -1 ? 'An error occurred while editing the item.' : 'An error occurred while adding the item.'
+        }
+        setTimeout(() => {
+          this.errorAPI = ''
+        }, 2000)
       }
       this.close()
       // update recipes to reflect changes
