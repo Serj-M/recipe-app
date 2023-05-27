@@ -261,7 +261,7 @@ export default {
         this.closeDelete()
         // update recipes to reflect changes
         await this.loadItems(this.paramsLoadItems, false)
-        this.deleteAlert()
+        // this.deleteAlert()
       } catch (error) {
         console.error(error)
       }
