@@ -14,7 +14,7 @@
     @update:options="loadItems">
     <template v-slot:top>
       <v-toolbar flat>
-        <v-toolbar-title class="title-table">titleTable</v-toolbar-title>
+        <v-toolbar-title class="title-table">{{titleTable}}</v-toolbar-title>
         <v-divider class="mx-4" inset vertical></v-divider>
         <v-spacer></v-spacer>
         <v-dialog v-model="dialogAction" max-width="1000px">
@@ -178,7 +178,7 @@ export default {
 
   async created() {
     await this.loadHeaders()
-    await this.loadItems({})
+    await this.loadItems({}, true)
     const res = await api.get('/recipes/v1/tags')
     this.tagsJSON = res.data.tags
     this.tagsNames = this.tagsJSON.map(el => el.name)
@@ -216,7 +216,7 @@ export default {
       }
     },
 
-    async loadItems({ page=1, itemsPerPage=10, sortBy=[] }) {
+    async loadItems({ page=1, itemsPerPage=10, sortBy=[] }, cache=true) {
       this.loading = true
       try {
         const tagsIds = this.getTagsIds(this.tags)
@@ -226,7 +226,12 @@ export default {
           sortBy, 
           search: { tags: tagsIds, ingredients: this.ingredients }
         }
-        const res = await api.post('/recipes/v1/items', this.paramsLoadItems)
+        let res = null
+        if (cache) {
+          res = await api.post('/recipes/v1/items', this.paramsLoadItems)
+        } else {
+          res = await api.post('/recipes/v1/items_without_cache', this.paramsLoadItems)
+        }
         res.data.items.forEach(el => el.tags = el.tags.join(', '))
         this.serverItems = res.data.items
         this.totalItems = res.data.totalItems
@@ -253,9 +258,9 @@ export default {
     async deleteItemConfirm() {
       try {
         const res = await api.delete(`/recipes/v1/del/${this.editedItem.id}`)
-        // update recipes to reflect changes
-        await this.loadItems(this.paramsLoadItems)
         this.closeDelete()
+        // update recipes to reflect changes
+        await this.loadItems(this.paramsLoadItems, false)
         this.deleteAlert()
       } catch (error) {
         console.error(error)
@@ -263,7 +268,6 @@ export default {
     },
 
     close() {
-      this.loading = false
       this.dialogAction = false
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem)
@@ -272,7 +276,6 @@ export default {
     },
 
     closeDelete() {
-      this.loading = false
       this.dialogDelete = false
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem)
@@ -304,14 +307,15 @@ export default {
       } catch (error) {
         console.error(error)
       }
-      // update recipes to reflect changes
-      await this.loadItems(this.paramsLoadItems)
       this.close()
+      // update recipes to reflect changes
+      await this.loadItems(this.paramsLoadItems, false)
     },
 
     prepParams(params) {
-      params.tags = this.getTagsIds(params.tags)
-      return params
+      const result = Object.assign({}, params)
+      result.tags = this.getTagsIds(params.tags)
+      return result
     },
 
     getTagsIds(tags) {

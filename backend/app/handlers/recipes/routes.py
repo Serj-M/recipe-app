@@ -45,6 +45,20 @@ async def get_recipes(
     return {'totalItems': data['totalItems'], 'items': data['items']}
 
 
+@recipes_router.post('/items_without_cache')
+async def get_recipes(
+    params: RecipeSchema,
+    session: AsyncSession = Depends(get_session)
+) -> dict:
+    """
+    Router to retrieve a list of recipes and do not use cache.
+    :return: Dictionary with number and list of activities
+    """
+    recipe: Recipe = Recipe(session)
+    data: dict = await recipe.get_data(params=params)
+    return {'totalItems': data['totalItems'], 'items': data['items']}
+
+
 @recipes_router.post('/add', status_code=201)
 @redis.cache(ex=config.REDIS_CACHE_EX.default)
 async def add_recipe(
@@ -107,7 +121,7 @@ async def edit_recipe(
     """
     recipe: Recipe = Recipe(session)
     _id: int = await recipe.edit_recipe(recipe_id=recipe_id, params=params)
-    return 0
+    return _id
 
 
 @recipes_router.get('/tags')
