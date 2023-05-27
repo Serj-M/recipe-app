@@ -283,8 +283,8 @@ export default {
           this.errorAPI = ''
         }, 2000)
         // update recipes to reflect changes
-        await this.loadItems(this.paramsLoadItems, false)
       }
+      await this.loadItems(this.paramsLoadItems, false)
     },
 
     close() {
