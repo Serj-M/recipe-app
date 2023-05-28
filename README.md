@@ -31,3 +31,11 @@ ________________________________________________________________________________
   Backend:  http://localhost:8765
 
   Swagger:  http://localhost:8765/docs 
+
+_______________________________________________________________________________________________________________
+
+**The application is also hosted and can be accessed via a link:**
+
+  UI:       https://frontend-recipes.onrender.com/ 
+
+  Swagger:  https://recipes-backend-ns4l.onrender.com/docs#/ -  On hosting. Here you can see the available endpoints and descriptions.
